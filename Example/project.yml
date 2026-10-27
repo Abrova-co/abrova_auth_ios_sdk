@@ -1,0 +1,28 @@
+name: AbrovaAuthExample
+options:
+  bundleIdPrefix: ir.abrova.auth
+  deploymentTarget:
+    iOS: "16.0"
+packages:
+  AbrovaAuth:
+    path: ../
+targets:
+  AbrovaAuthExample:
+    type: application
+    platform: iOS
+    sources:
+      - AbrovaAuthExample
+    info:
+      path: AbrovaAuthExample/Info.plist
+    dependencies:
+      - package: AbrovaAuth
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ir.abrova.auth.example
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_IDENTITY: ""
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGNING_ALLOWED: "NO"
+        SUPPORTED_PLATFORMS: "iphonesimulator iphoneos"
+        SUPPORTS_MACCATALYST: "NO"
+        SDKROOT: iphoneos
