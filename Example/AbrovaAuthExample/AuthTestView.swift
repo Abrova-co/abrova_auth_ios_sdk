@@ -11,7 +11,10 @@ private let apiKeyPlaceholder = "ab_live_YOUR_PUBLIC_KEY"
 
 @MainActor
 final class AuthModel: ObservableObject {
-    @Published var apiKey = apiKeyPlaceholder
+    // Optional launch values (Xcode scheme → Arguments → Environment): ABROVA_AUTH_API_KEY and ABROVA_AUTH_URL.
+    @Published var apiKey = ProcessInfo.processInfo.environment["ABROVA_AUTH_API_KEY"] ?? apiKeyPlaceholder
+    // Optional: another Auth server, for example one you run yourself. Empty = the default server.
+    @Published var serverURL = ProcessInfo.processInfo.environment["ABROVA_AUTH_URL"] ?? ""
     @Published var email = ""
     @Published var password = ""
     @Published private(set) var userId: String?
@@ -29,7 +32,15 @@ final class AuthModel: ObservableObject {
             return
         }
         listener?.remove()
-        auth.configure(apiKey: key)
+        let server = serverURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        if server.isEmpty {
+            auth.configure(apiKey: key)
+        } else if let url = URL(string: server) {
+            auth.configure(apiKey: key, baseURL: url)
+        } else {
+            status = "The server URL is not valid."
+            return
+        }
         // Called on sign-in, sign-out and when a session ends.
         listener = auth.addAuthStateListener { [weak self] userId in
             Task { @MainActor in self?.userId = userId }
@@ -90,6 +101,8 @@ struct AuthTestView: View {
             Form {
                 Section("Project") {
                     TextField("Public API key (ab_live_...)", text: $model.apiKey)
+                        .plainInput()
+                    TextField("Server URL (optional)", text: $model.serverURL)
                         .plainInput()
                     Button("Configure", action: model.configure)
                 }
