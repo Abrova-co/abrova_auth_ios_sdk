@@ -40,8 +40,13 @@ https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git
 
 ### CocoaPods
 
+Add Abrova Center's spec repository at the top of your `Podfile` (the second `source` line keeps public pods working), then the pod:
+
 ```ruby
-pod 'AbrovaAuth', :git => 'https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git', :tag => '0.1.1'
+source 'https://center.abrova.ir/abrova/specs.git'
+source 'https://cdn.cocoapods.org/'
+
+pod 'AbrovaAuth', '~> 0.1'
 ```
 
 ## Quick start
