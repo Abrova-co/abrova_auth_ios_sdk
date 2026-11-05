@@ -28,7 +28,7 @@ The SDK is published on [Abrova Center](https://center.abrova.ir). Add to your `
 
 ```swift
 dependencies: [
-    .package(url: "https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git", from: "0.1.1"),
+    .package(url: "https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git", from: "0.2.0"),
 ]
 ```
 
@@ -180,6 +180,21 @@ try await auth.deleteAccount()      // required by the App Store for apps with s
 The refresh token is stored in the Keychain on this device only; the access
 token stays in memory. A session revoked elsewhere signs the user out here; a
 network error does not.
+
+## Custom claims
+
+Your server sets custom claims for a user with the server secret (`setCustomUserClaims`, see
+[Custom claims](https://abrova.ir/docs/auth/custom-claims)), for example `{ "plan": "pro" }`. Every token of the
+user carries them, and Abrova Sync rules read them as `auth.token.plan`. In the app, read them to show things
+(a "Pro" badge): access is still decided on the server.
+
+```swift
+let result = try await auth.getTokenResult()
+if result?.claims["plan"] as? String == "pro" { showProBadge() }
+
+// Right after your server changed the claims ("Check my purchase"):
+_ = try await auth.getTokenResult(forceRefresh: true)
+```
 
 ## Errors
 

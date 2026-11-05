@@ -129,6 +129,17 @@ public final class AbrovaAuth {
         try await sessionManager().validAccessToken(forceRefresh: forceRefresh)
     }
 
+    /// The access token with its decoded fields, like Firebase's
+    /// `getIDTokenResult()`: `claims` holds the custom claims your server set
+    /// (`setCustomUserClaims`), for example to show a "Pro" badge. Nil when
+    /// nobody is signed in. Pass `forceRefresh: true` right after your server
+    /// changed the claims, to get them without waiting for the next refresh
+    /// (at most an hour). For display only: access is decided on the server.
+    public func getTokenResult(forceRefresh: Bool = false) async throws -> AbrovaTokenResult? {
+        guard let token = try await getAccessToken(forceRefresh: forceRefresh) else { return nil }
+        return AbrovaTokenResult(token: token)
+    }
+
     /// Pass this to Abrova Sync and Abrova Push: `sync.userTokens.provider = AbrovaAuth.shared.tokenProvider`.
     public var tokenProvider: AbrovaAuthTokenProvider {
         { [unowned self] in try await self.getAccessToken() }
