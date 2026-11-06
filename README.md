@@ -28,7 +28,7 @@ The SDK is published on [Abrova Center](https://center.abrova.ir). Add to your `
 
 ```swift
 dependencies: [
-    .package(url: "https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git", from: "0.2.0"),
+    .package(url: "https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git", from: "0.3.0"),
 ]
 ```
 
@@ -46,7 +46,7 @@ Add Abrova Center's spec repository at the top of your `Podfile` (the second `so
 source 'https://center.abrova.ir/abrova/specs.git'
 source 'https://cdn.cocoapods.org/'
 
-pod 'AbrovaAuth', '~> 0.1'
+pod 'AbrovaAuth', '~> 0.3'
 ```
 
 ## Quick start
@@ -195,6 +195,18 @@ if result?.claims["plan"] as? String == "pro" { showProBadge() }
 // Right after your server changed the claims ("Check my purchase"):
 _ = try await auth.getTokenResult(forceRefresh: true)
 ```
+
+## E-mail language
+
+Confirm e-mail, password reset and magic-link e-mails go out in the language you set, like Firebase's `languageCode`.
+Unset, the project's template language from the Console applies. Edit the texts in **Console › Abrova Auth › Email
+templates**.
+
+```swift
+AbrovaAuth.shared.languageCode = "fa" // or AbrovaAuth.shared.useAppLanguage()
+```
+
+See [Email templates](https://abrova.ir/docs/auth/email-templates).
 
 ## Errors
 

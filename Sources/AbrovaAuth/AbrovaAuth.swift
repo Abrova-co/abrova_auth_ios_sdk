@@ -38,8 +38,34 @@ public final class AbrovaAuth {
     private var userId: String?
     private var cachedUser: AbrovaUser?
     private var listeners: [UUID: (String?) -> Void] = [:]
+    private var language: String?
 
     init() {}
+
+    // MARK: - Language
+
+    /// The language of the e-mails Abrova sends this user (confirm e-mail, password reset, magic link), like
+    /// Firebase's `languageCode`: a BCP 47 tag such as `fa` or `en-US`. nil = the project's template language
+    /// (Console › Abrova Auth › Email templates). A language Abrova has no texts for also falls back to it.
+    public var languageCode: String? {
+        get {
+            lock.lock(); defer { lock.unlock() }
+            return language
+        }
+        set {
+            let v = newValue?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let ok = (2...35).contains(v.count) && v.range(of: "^[A-Za-z]{2,8}([-_][A-Za-z0-9]{1,8})*$", options: .regularExpression) != nil
+            lock.lock()
+            language = ok ? v : nil
+            http?.locale = language
+            lock.unlock()
+        }
+    }
+
+    /// Sets `languageCode` to the app's current language, like Firebase's `useAppLanguage()`.
+    public func useAppLanguage() {
+        languageCode = Bundle.main.preferredLocalizations.first ?? Locale.preferredLanguages.first
+    }
 
     // MARK: - Setup
 
@@ -70,6 +96,7 @@ public final class AbrovaAuth {
             self?.userChanged(user)
         }
         lock.lock()
+        http.locale = language
         self.http = http
         self.session = manager
         self.userId = manager.restoredUserId
