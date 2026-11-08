@@ -352,7 +352,7 @@ final class AbrovaAuthTests: XCTestCase {
 
         XCTAssertGreaterThanOrEqual(StubURLProtocol.requests.count, 2)
         for r in StubURLProtocol.requests {
-            XCTAssertEqual(r.headers["X-Abrova-SDK"], "auth-ios/0.3.0", r.path)
+            XCTAssertEqual(r.headers["X-Abrova-SDK"], "auth-ios/0.4.0", r.path)
         }
     }
 

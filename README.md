@@ -28,7 +28,7 @@ The SDK is published on [Abrova Center](https://center.abrova.ir). Add to your `
 
 ```swift
 dependencies: [
-    .package(url: "https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git", from: "0.3.0"),
+    .package(url: "https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git", from: "0.4.0"),
 ]
 ```
 
@@ -46,7 +46,7 @@ Add Abrova Center's spec repository at the top of your `Podfile` (the second `so
 source 'https://center.abrova.ir/abrova/specs.git'
 source 'https://cdn.cocoapods.org/'
 
-pod 'AbrovaAuth', '~> 0.3'
+pod 'AbrovaAuth', '~> 0.4'
 ```
 
 ## Quick start
@@ -67,6 +67,36 @@ try await AbrovaAuth.shared.signInAnonymously()
 print(AbrovaAuth.shared.currentUserId ?? "signed out")
 ```
 
+## Ready-made sign-in screen
+
+Like FirebaseUI: Abrova's sign-in screen, with no forms to build. It shows only the methods turned on in the Console
+and answers the signed-in user, or nil when the user closed it (iOS 15 and later).
+
+```swift
+import AbrovaAuth
+
+let options = AbrovaSignInOptions(appName: "My Shop")
+if let result = await AbrovaSignIn.present(from: self, options: options) {
+    print(result.userId)
+}
+```
+
+It opens full screen on iPhone and as a sheet on iPad, and cannot be closed while a sign-in runs. There is also a
+completion-handler version, `AbrovaSignIn.present(from:options:completion:)`. To put the form in a SwiftUI screen of
+your own, use `AbrovaSignInView(options: options) { result in ... }`.
+
+| Option | What it does |
+|---|---|
+| `appName`, `logo` | The title ("Sign in to My Shop") and an image above it |
+| `languageCode` | `en` or `fa` (right to left). Default: the app's language. The e-mails follow it unless you set `languageCode` on the client yourself |
+| `allowGuest` | Shows "Continue as guest" when anonymous sign-in is on. Off by default: every guest is a new user and counts toward your plan |
+| `google`, `apple` | A function that gets an ID token for the hashed nonce it is given (for example with Google Sign-In). The button shows only when you pass it. `apple: AbrovaSignInOptions.nativeApple` runs Sign in with Apple for you |
+| `magicLinkRedirectURL` | A link that opens your app; shows the magic link button. Finish it with `signInWithMagicLink(url:)` |
+| `verifyRedirectURL`, `resetRedirectURL` | Your own pages for the confirm and reset links. Default: Abrova's pages |
+| `openURL` | Opens the Telegram bot link (for example `{ await UIApplication.shared.open($0) }`); without it the link is shown to copy |
+
+The screen follows your app's tint colour and dark mode.
+
 ## Sign in
 
 ```swift
@@ -76,6 +106,7 @@ try await auth.signInAnonymously()
 try await auth.signIn(email: "ana@example.com", password: "a-long-password")
 let result = try await auth.signUp(email: "ana@example.com", password: "a-long-password",
                                    redirectURL: "https://example.com/verify")
+try await auth.sendPasswordReset(email: "ana@example.com") // the link opens Abrova's reset page
 
 // Magic link: send it, then sign in with the link the app is opened with.
 try await auth.sendMagicLink(email: "ana@example.com", redirectURL: "https://example.com/magic")
@@ -217,8 +248,8 @@ developers.
 
 ## Example app
 
-[`Example/`](Example) is a SwiftUI app with anonymous sign-in, e-mail sign-up
-and sign-in, sign-out and account deletion. Open
+[`Example/`](Example) is a SwiftUI app with the ready-made sign-in screen,
+anonymous sign-in, e-mail sign-up and sign-in, sign-out and account deletion. Open
 `Example/AbrovaAuthExample.xcodeproj`, run it on a simulator and paste your
 public key (`ab_live_...`) into its API key field. The project is generated
 from `Example/project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen).

@@ -44,6 +44,33 @@ extension AbrovaAuth {
     }
 }
 
+extension AbrovaSignInOptions {
+    /// Sign in with Apple through Apple's own sheet, for the sign-in screen's `apple` option:
+    /// `AbrovaSignInOptions(apple: AbrovaSignInOptions.nativeApple)`. Answers nil when the user closes the sheet.
+    /// Add the "Sign in with Apple" capability to your app.
+    @MainActor
+    public static func nativeApple(_ hashedNonce: String) async throws -> AbrovaAppleCredential? {
+        let credential: ASAuthorizationAppleIDCredential
+        do {
+            credential = try await AppleSignInFlow(anchor: AppleSignInFlow.keyWindow()).run(hashedNonce: hashedNonce)
+        } catch let error as AbrovaAuthError where error.code == .canceled {
+            return nil
+        }
+        guard let tokenData = credential.identityToken, let idToken = String(data: tokenData, encoding: .utf8) else {
+            throw AbrovaAuthError(code: .invalidIdToken, message: "Apple returned no identity token")
+        }
+        let name = credential.fullName.flatMap { components -> String? in
+            let formatted = PersonNameComponentsFormatter().string(from: components)
+            return formatted.isEmpty ? nil : formatted
+        }
+        return AbrovaAppleCredential(
+            idToken: idToken,
+            authorizationCode: credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) },
+            fullName: name
+        )
+    }
+}
+
 /// One Sign in with Apple request. Keeps itself alive until Apple answers.
 /// Apple calls the delegate on the main thread.
 private final class AppleSignInFlow: NSObject, ASAuthorizationControllerDelegate, ASAuthorizationControllerPresentationContextProviding {

@@ -104,6 +104,12 @@ public final class AbrovaAuth {
         lock.unlock()
     }
 
+    /// The Abrova Auth server this client talks to.
+    public var baseURL: URL {
+        lock.lock(); defer { lock.unlock() }
+        return http?.baseURL ?? Self.defaultBaseURL
+    }
+
     // MARK: - State
 
     /// The signed-in user's id, or nil.
@@ -259,8 +265,12 @@ public final class AbrovaAuth {
     }
 
     /// Sends a password-reset link. Succeeds whether or not the address has an account.
-    public func sendPasswordReset(email: String, redirectURL: String) async throws {
-        try await client().send("POST", "v1/password/forgot", body: ["email": email, "redirectUrl": redirectURL])
+    /// - Parameter redirectURL: Where the link opens; one of the project's allowed redirect URLs. nil: Abrova's own
+    ///   reset page.
+    public func sendPasswordReset(email: String, redirectURL: String? = nil) async throws {
+        var body = ["email": email]
+        body["redirectUrl"] = redirectURL
+        try await client().send("POST", "v1/password/forgot", body: body)
     }
 
     /// Sets a new password with the token from the reset link. Every session of
