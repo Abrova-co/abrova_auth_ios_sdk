@@ -1,19 +1,31 @@
 import Foundation
 
-/// The sign-in screen's texts in English and Persian.
+/// The sign-in screen's texts: English, and each language in `languages`.
 public struct AbrovaSignInStrings: Equatable {
-    /// `en` or `fa`.
+    /// The language whose texts are shown: one the screen has (see `languages`), English for any other.
     public let languageCode: String
     private let table: [String: String]
 
-    /// Persian reads right to left.
-    public var isRightToLeft: Bool { languageCode == "fa" }
+    /// Whether the language reads right to left.
+    public let isRightToLeft: Bool
 
-    /// Persian for `fa*`, English for everything else.
+    private init(_ languageCode: String, _ table: [String: String], rightToLeft: Bool) {
+        self.languageCode = languageCode
+        self.table = table
+        self.isRightToLeft = rightToLeft
+    }
+
+    /// The languages of the screen, by the part of a language code before "-" or "_" ("en-US" → "en").
+    static let languages: [String: AbrovaSignInStrings] = [
+        "en": AbrovaSignInStrings("en", english, rightToLeft: false),
+        "fa": AbrovaSignInStrings("fa", persian, rightToLeft: true),
+    ]
+
+    /// The texts of `languageCode` when the screen has them, English for everything else.
     public static func of(_ languageCode: String?) -> AbrovaSignInStrings {
-        (languageCode ?? "").lowercased().hasPrefix("fa")
-            ? AbrovaSignInStrings(languageCode: "fa", table: persian)
-            : AbrovaSignInStrings(languageCode: "en", table: english)
+        let code = (languageCode ?? "").trimmingCharacters(in: .whitespaces).lowercased()
+            .split(whereSeparator: { $0 == "-" || $0 == "_" }).first.map(String.init) ?? ""
+        return languages[code] ?? languages["en"]!
     }
 
     public subscript(key: String) -> String {
@@ -26,7 +38,7 @@ public struct AbrovaSignInStrings: Equatable {
         return table[key] ?? Self.english[key] ?? self["error.other"]
     }
 
-    /// Every text key (the same for both languages).
+    /// Every text key (the same in every language).
     static var keys: Set<String> { Set(english.keys) }
 
     static let english: [String: String] = [

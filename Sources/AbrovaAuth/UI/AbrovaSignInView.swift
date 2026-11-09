@@ -320,7 +320,7 @@ private struct Header: View {
             if let onBack = onBack {
                 HStack {
                     Button(action: onBack) {
-                        // Mirrors to a right-pointing chevron in Persian.
+                        // Mirrors to a right-pointing chevron in a right-to-left language.
                         Image(systemName: "chevron.backward")
                             .font(.body.weight(.semibold))
                             .frame(width: 44, height: 44)
@@ -386,7 +386,7 @@ private struct Field: View {
 
     @Environment(\.layoutDirection) private var direction
 
-    /// E-mail, phone and code read left to right, also in Persian.
+    /// E-mail, phone and code read left to right, also in a right-to-left language.
     private var ltr: Bool { kind == .email || kind == .phone || kind == .code }
 
     var body: some View {

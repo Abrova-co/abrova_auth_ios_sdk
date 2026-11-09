@@ -372,23 +372,23 @@ final class AbrovaAuthTests: XCTestCase {
         StubURLProtocol.reset { _ in .empty(202) }
         make()
         try await auth.sendMagicLink(email: "a@example.com", redirectURL: "https://app.example.com/magic")
-        auth.languageCode = "fa"
+        auth.languageCode = "de"
         try await auth.sendMagicLink(email: "a@example.com", redirectURL: "https://app.example.com/magic")
         auth.languageCode = nil
         try await auth.sendMagicLink(email: "a@example.com", redirectURL: "https://app.example.com/magic")
         let sent = StubURLProtocol.requests(to: "/v1/magic-link/send").map { $0.headers["x-abrova-locale"] }
-        XCTAssertEqual(sent, [nil, "fa", nil])
+        XCTAssertEqual(sent, [nil, "de", nil])
     }
 
     func testLanguageCodeSetBeforeConfigureIsKeptAndBadValuesAreIgnored() async throws {
         StubURLProtocol.reset { _ in .empty(202) }
         storage = MemorySessionStorage(nil)
         auth = AbrovaAuth()
-        auth.languageCode = "fa-IR"
+        auth.languageCode = "de-AT"
         auth.configure(apiKey: "ab_live_test", baseURL: base, urlSession: StubURLProtocol.session(), storage: storage)
         try await auth.sendMagicLink(email: "a@example.com", redirectURL: "https://app.example.com/magic")
-        XCTAssertEqual(StubURLProtocol.requests(to: "/v1/magic-link/send").first?.headers["x-abrova-locale"], "fa-IR")
-        for bad in ["", "x", "fa\r\nX: y", String(repeating: "x", count: 40), "12"] {
+        XCTAssertEqual(StubURLProtocol.requests(to: "/v1/magic-link/send").first?.headers["x-abrova-locale"], "de-AT")
+        for bad in ["", "x", "de\r\nX: y", String(repeating: "x", count: 40), "12"] {
             auth.languageCode = bad
             XCTAssertNil(auth.languageCode, bad)
         }

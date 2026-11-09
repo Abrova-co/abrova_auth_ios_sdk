@@ -177,7 +177,7 @@ final class SignInUITests: XCTestCase {
         await c.sendReset()?.value
         XCTAssertEqual(auth.languageCode, "fa")
         XCTAssertEqual(StubURLProtocol.requests(to: "/v1/password/forgot").first?.headers["x-abrova-locale"], "fa")
-        XCTAssertEqual(AbrovaSignInStrings.of("en-US").isRightToLeft, false)
+        XCTAssertEqual(AbrovaSignInStrings.of("FA_ir").languageCode, "fa")
     }
 
     // MARK: - Rule 3: sign-up
@@ -411,14 +411,14 @@ final class SignInUITests: XCTestCase {
 
     func testTheEmailsFollowTheOpenScreenGivenBackOnCloseNeverTheAppsOwnChoice() async {
         let auth = client()
-        let (c, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "fa"), auth: auth)
-        XCTAssertEqual(auth.languageCode, "fa")
+        let (c, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "en"), auth: auth)
+        XCTAssertEqual(auth.languageCode, "en")
         c.close()
         XCTAssertNil(auth.languageCode, "given back")
 
         auth.languageCode = "en-US"
-        let (d, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "fa"), auth: auth)
-        XCTAssertEqual(d.strings.languageCode, "fa")
+        let (d, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "en"), auth: auth)
+        XCTAssertEqual(d.strings.languageCode, "en")
         XCTAssertEqual(auth.languageCode, "en-US", "the app's own choice stays")
         d.close()
         XCTAssertEqual(auth.languageCode, "en-US")
@@ -426,10 +426,10 @@ final class SignInUITests: XCTestCase {
 
     func testTwoOverlappingScreensKeepTheLanguageUntilTheLastCloses() async {
         let auth = client()
-        let (a, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "fa"), auth: auth)
-        let (b, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "fa"), auth: auth) // opens before a closes
+        let (a, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "en"), auth: auth)
+        let (b, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "en"), auth: auth) // opens before a closes
         a.close()
-        XCTAssertEqual(auth.languageCode, "fa", "b is still open")
+        XCTAssertEqual(auth.languageCode, "en", "b is still open")
         b.close()
         XCTAssertNil(auth.languageCode)
         b.close()
@@ -438,10 +438,10 @@ final class SignInUITests: XCTestCase {
 
     func testTheAppChangingTheLanguageWhileOpenIsKept() async {
         let auth = client()
-        let (c, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "fa"), auth: auth)
-        auth.languageCode = "en"
+        let (c, _) = await screen(["password"], AbrovaSignInOptions(languageCode: "en"), auth: auth)
+        auth.languageCode = "de"
         c.close()
-        XCTAssertEqual(auth.languageCode, "en")
+        XCTAssertEqual(auth.languageCode, "de")
     }
 
     func testTheAppLanguageDecidesWhenNoLanguageCodeIsGiven() {
@@ -458,11 +458,16 @@ final class SignInUITests: XCTestCase {
 
     // MARK: - Texts
 
-    func testBothLanguagesHaveTheSameTexts() {
-        XCTAssertEqual(Set(AbrovaSignInStrings.english.keys), Set(AbrovaSignInStrings.persian.keys))
+    func testTheTexts() {
         XCTAssertEqual(AbrovaSignInStrings.keys.count, 54)
-        XCTAssertEqual(AbrovaSignInStrings.of("fa").error("VERIFY_NOT_SENT"), AbrovaSignInStrings.persian["error.VERIFY_NOT_SENT"])
         XCTAssertEqual(AbrovaSignInStrings.of("de").error("NOPE"), "Something went wrong. Try again.")
+        for code in ["de", "de-DE", "", "toString", "EN_us"] as [String] {
+            XCTAssertEqual(AbrovaSignInStrings.of(code).languageCode, "en", code)
+            XCTAssertFalse(AbrovaSignInStrings.of(code).isRightToLeft, code)
+        }
+        XCTAssertEqual(AbrovaSignInStrings.of(nil).languageCode, "en")
+        XCTAssertEqual(Set(AbrovaSignInStrings.english.keys), Set(AbrovaSignInStrings.persian.keys))
+        XCTAssertEqual(AbrovaSignInStrings.of("fa").error("VERIFY_NOT_SENT"), AbrovaSignInStrings.persian["error.VERIFY_NOT_SENT"])
         XCTAssertEqual(AbrovaSignInStrings.of("fa").error("NOPE"), "مشکلی پیش آمد. دوباره امتحان کنید.")
     }
 

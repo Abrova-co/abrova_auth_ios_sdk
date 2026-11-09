@@ -17,7 +17,12 @@ final class LiveSignInTests: XCTestCase {
         }
         let auth = AbrovaAuth()
         auth.configure(apiKey: key, baseURL: url, urlSession: .shared, storage: MemorySessionStorage(nil))
-        let options = AbrovaSignInOptions(languageCode: "fa", allowGuest: true, magicLinkRedirectURL: magic)
+        // The screen's language for the run, and the text expected in it.
+        var language = "en"
+        var wrongPassword = "Wrong e-mail or password."
+        language = "fa"
+        wrongPassword = "ایمیل یا رمز اشتباه است."
+        let options = AbrovaSignInOptions(languageCode: language, allowGuest: true, magicLinkRedirectURL: magic)
         var signedIn: [AuthResult] = []
 
         // Sign up.
@@ -25,7 +30,7 @@ final class LiveSignInTests: XCTestCase {
         await first.load().value
         XCTAssertEqual(first.screen, .home, first.errorText ?? "")
         XCTAssertTrue(first.showPassword && first.showMagicLink && first.showGuest)
-        XCTAssertEqual(auth.languageCode, "fa")
+        XCTAssertEqual(auth.languageCode, language)
         first.go(.signUp)
         first.email = email
         first.password = password
@@ -36,14 +41,14 @@ final class LiveSignInTests: XCTestCase {
         first.close()
         XCTAssertNil(auth.languageCode, "given back on close")
 
-        // A wrong password, in Persian; then the right one: the same user.
+        // A wrong password, in the screen's language; then the right one: the same user.
         let screen = AbrovaSignInController(auth: auth, options: options) { signedIn.append($0) }
         await screen.load().value
         screen.email = email
         screen.password = password + "-wrong"
         await screen.signIn()?.value
         XCTAssertEqual(screen.error, "INVALID_CREDENTIALS")
-        XCTAssertEqual(screen.errorText, "ایمیل یا رمز اشتباه است.")
+        XCTAssertEqual(screen.errorText, wrongPassword)
         print("wrong password: \(screen.errorText ?? "")")
         screen.password = password
         await screen.signIn()?.value
@@ -52,7 +57,7 @@ final class LiveSignInTests: XCTestCase {
         XCTAssertEqual(signedIn.count, 2)
         print("signed in again \(signedIn.last?.userId ?? "")")
 
-        // Reset (Abrova's own page) and magic link, both in Persian.
+        // Reset (Abrova's own page) and magic link, both in the screen's language.
         screen.go(.forgot)
         await screen.sendReset()?.value
         XCTAssertNil(screen.error, screen.errorText ?? "")

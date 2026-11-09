@@ -25,8 +25,9 @@ public struct AbrovaSignInOptions {
     /// Shown above the title, for example your app icon (`Image("AppLogo")` or `Image(uiImage: image)`).
     public var logo: Image?
 
-    /// `en` or `fa`. nil: the app's language, English when it is neither. The e-mails Abrova sends follow it too,
-    /// unless you set `AbrovaAuth.languageCode` yourself.
+    /// The screen's language, a code such as `en`. nil: the app's language, English when the screen doesn't have it.
+    /// The e-mails Abrova sends follow it too, unless you set `AbrovaAuth.languageCode` yourself.
+    /// Persian: `fa`, right to left.
     public var languageCode: String?
 
     /// Shows "Continue as guest" when anonymous sign-in is on. Off by default: every guest is a new user and counts
