@@ -1,7 +1,7 @@
 import SwiftUI
 import AbrovaAuth
 
-// Abrova Auth — iOS example (SDK 0.4.0)
+// Abrova Auth — iOS example (SDK 0.5.0)
 //
 // Paste your public project key (Abrova Console → your project → API keys) into the field,
 // or replace the placeholder below. Never put a server secret in an app.

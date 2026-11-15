@@ -28,7 +28,7 @@ The SDK is published on [Abrova Center](https://center.abrova.ir). Add to your `
 
 ```swift
 dependencies: [
-    .package(url: "https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git", from: "0.4.0"),
+    .package(url: "https://center.abrova.ir/abrova/abrova-auth-ios-sdk.git", from: "0.5.0"),
 ]
 ```
 
@@ -46,7 +46,7 @@ Add Abrova Center's spec repository at the top of your `Podfile` (the second `so
 source 'https://center.abrova.ir/abrova/specs.git'
 source 'https://cdn.cocoapods.org/'
 
-pod 'AbrovaAuth', '~> 0.4'
+pod 'AbrovaAuth', '~> 0.5'
 ```
 
 ## Quick start
@@ -93,7 +93,11 @@ your own, use `AbrovaSignInView(options: options) { result in ... }`.
 | `google`, `apple` | A function that gets an ID token for the hashed nonce it is given (for example with Google Sign-In). The button shows only when you pass it. `apple: AbrovaSignInOptions.nativeApple` runs Sign in with Apple for you |
 | `magicLinkRedirectURL` | A link that opens your app; shows the magic link button. Finish it with `signInWithMagicLink(url:)` |
 | `verifyRedirectURL`, `resetRedirectURL` | Your own pages for the confirm and reset links. Default: Abrova's pages |
+| `continueURL` | Where the "Continue" button of Abrova's confirm and reset pages takes the user afterwards (for example your website). One of the project's link addresses |
 | `openURL` | Opens the Telegram bot link (for example `{ await UIApplication.shared.open($0) }`); without it the link is shown to copy |
+
+When the project requires a confirmed e-mail and the user signs in before confirming, the screen shows "Send again":
+it e-mails a new confirmation link, using the e-mail and password just typed.
 
 The screen follows your app's tint colour and dark mode.
 
@@ -117,6 +121,37 @@ let code = try await auth.requestTelegramCode(phone: "+37491234567")
 if !code.sent, let url = code.botURL { await UIApplication.shared.open(url) }
 try await auth.verifyTelegramCode(phone: "+37491234567", code: "123456")
 ```
+
+### Confirm the e-mail
+
+When the project requires a confirmed e-mail (Console › Abrova Auth › Settings), `signUp` always sends the
+confirmation link (to Abrova's own confirm page when you pass no `redirectURL`) and the user is signed in only after
+confirming. For someone who signs in before confirming (the error is `.emailNotVerified`), send the link again with
+the e-mail and password they typed. It does not sign them in:
+
+```swift
+do {
+    try await auth.signIn(email: email, password: password)
+} catch let error as AbrovaAuthError where error.code == .emailNotVerified {
+    try await auth.resendVerification(email: email, password: password)
+}
+```
+
+A wrong password fails like signing in (`.invalidCredentials`); an account that is already confirmed gets no e-mail.
+A signed-in user who has not confirmed yet gets a new link with `sendEmailVerification()`.
+
+### Continue after the link
+
+`signUp`, `sendPasswordReset`, `sendEmailVerification` and `resendVerification` take an optional `continueURL`, like
+Firebase's continue URL: after confirming the e-mail or saving the new password on Abrova's own page, the user sees a
+"Continue" button that goes there. It must be one of the project's link addresses (Console › Abrova Auth › Settings),
+otherwise the call fails with `.invalidInput`. It is not used when `redirectURL` is your own page.
+
+```swift
+try await auth.sendPasswordReset(email: "ana@example.com", continueURL: "https://example.com/welcome-back")
+```
+
+Link addresses may also be `http://localhost:<port>` or `http://127.0.0.1:<port>` while you develop.
 
 Show only the methods the project offers:
 
